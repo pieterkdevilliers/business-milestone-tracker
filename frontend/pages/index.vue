@@ -1,5 +1,3 @@
-<template>
-  <main>
-    <h1>Daily Tasks</h1>
-  </main>
-</template>
+<script setup lang="ts">
+navigateTo("/tracker", { replace: true })
+</script>
