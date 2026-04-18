@@ -11,6 +11,17 @@
     </div>
 
     <template v-else>
+      <!-- Breadcrumb -->
+      <div class="mb-4">
+        <NuxtLink
+          v-if="quarter"
+          :to="`/tracker/quarter/${quarter.quarter_number}`"
+          class="text-sm text-slate-400 hover:text-slate-600 transition-colors"
+        >
+          ← {{ quarter.label }}
+        </NuxtLink>
+      </div>
+
       <!-- Month header -->
       <div
         class="rounded-xl px-6 py-5 mb-6 text-white"
