@@ -81,6 +81,52 @@ export const useTrackerStore = defineStore("tracker", () => {
     }
   }
 
+  async function addMilestone(monthId: number, text: string) {
+    const api = useApi()
+    const created = await api.post<MilestoneItem>("/tracker/milestones", {
+      month_id: monthId,
+      text,
+    })
+    for (const q of quarters.value) {
+      const m = q.months.find((m) => m.id === monthId)
+      if (m) {
+        m.milestones.push(created)
+        return
+      }
+    }
+  }
+
+  async function updateMilestoneText(milestoneId: number, text: string) {
+    const api = useApi()
+    const updated = await api.patch<MilestoneItem>(
+      `/tracker/milestones/${milestoneId}`,
+      { text }
+    )
+    for (const q of quarters.value) {
+      for (const m of q.months) {
+        const idx = m.milestones.findIndex((ms) => ms.id === milestoneId)
+        if (idx >= 0) {
+          m.milestones[idx] = updated
+          return
+        }
+      }
+    }
+  }
+
+  async function deleteMilestone(milestoneId: number) {
+    const api = useApi()
+    await api.del(`/tracker/milestones/${milestoneId}`)
+    for (const q of quarters.value) {
+      for (const m of q.months) {
+        const idx = m.milestones.findIndex((ms) => ms.id === milestoneId)
+        if (idx >= 0) {
+          m.milestones.splice(idx, 1)
+          return
+        }
+      }
+    }
+  }
+
   async function updateMonthMetric(metricId: number, actual: string | null) {
     const api = useApi()
     const updated = await api.patch<MonthMetric>(
@@ -162,6 +208,9 @@ export const useTrackerStore = defineStore("tracker", () => {
     getQuarterColour,
     fetchAll,
     toggleMilestone,
+    addMilestone,
+    updateMilestoneText,
+    deleteMilestone,
     updateMonthMetric,
     updateMonthNote,
     updateQuarterMetric,

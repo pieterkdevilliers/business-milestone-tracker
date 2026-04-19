@@ -96,8 +96,14 @@ class MasterMilestoneSchema(BaseModel):
 
 # Request bodies
 
+class MilestoneCreate(BaseModel):
+    month_id: int
+    text: str
+
+
 class MilestoneUpdate(BaseModel):
-    completed: bool
+    completed: Optional[bool] = None
+    text: Optional[str] = None
 
 
 class MetricUpdate(BaseModel):

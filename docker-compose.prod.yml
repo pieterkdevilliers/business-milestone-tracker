@@ -1,24 +1,29 @@
 services:
   backend:
+    image: pieterkdevilliers/ee-tracker-backend:latest
     build:
       context: ./backend
       target: production
     volumes:
       - backend_db:/app/data
     ports:
-      - "8000:8000"
+      - "8010:8000"
     environment:
       DATABASE_URL: sqlite+aiosqlite:////app/data/daily_tasks.db
     restart: unless-stopped
 
   frontend:
+    image: pieterkdevilliers/ee-tracker-frontend:latest
     build:
       context: ./frontend
       target: production
     ports:
-      - "3000:3000"
+      - "3010:3000"
     environment:
-      NUXT_PUBLIC_API_BASE: http://backend:8000
+      # Browser calls go through the public tunnel
+      NUXT_PUBLIC_API_BASE: https://ee-tracker-api.expertecho.ai
+      # SSR calls stay inside Docker network
+      NUXT_API_BASE: http://backend:8000
     depends_on:
       - backend
     restart: unless-stopped

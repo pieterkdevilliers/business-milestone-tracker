@@ -49,7 +49,11 @@
         <MilestoneList
           :milestones="month.milestones"
           :colour="colour"
+          :month-id="month.id"
           @toggle="handleToggle"
+          @edit-saved="toast.value?.show()"
+          @deleted="toast.value?.show()"
+          @added="toast.value?.show()"
         />
       </section>
 

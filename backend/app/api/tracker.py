@@ -6,6 +6,7 @@ from app.schemas.tracker import (
     MasterMilestoneSchema,
     MasterMilestoneUpdate,
     MetricUpdate,
+    MilestoneCreate,
     MilestoneSchema,
     MilestoneUpdate,
     MonthDetail,
@@ -34,16 +35,34 @@ async def get_month(month_id: int, db: AsyncSession = Depends(get_db)):
     return month
 
 
+@router.post("/milestones", response_model=MilestoneSchema, status_code=201)
+async def create_milestone(
+    body: MilestoneCreate,
+    db: AsyncSession = Depends(get_db),
+):
+    return await service.create_milestone(db, body.month_id, body.text)
+
+
 @router.patch("/milestones/{milestone_id}", response_model=MilestoneSchema)
 async def update_milestone(
     milestone_id: int,
     body: MilestoneUpdate,
     db: AsyncSession = Depends(get_db),
 ):
-    milestone = await service.toggle_milestone(db, milestone_id, body.completed)
+    milestone = await service.update_milestone(db, milestone_id, body.completed, body.text)
     if not milestone:
         raise HTTPException(status_code=404, detail="Milestone not found")
     return milestone
+
+
+@router.delete("/milestones/{milestone_id}", status_code=204)
+async def delete_milestone(
+    milestone_id: int,
+    db: AsyncSession = Depends(get_db),
+):
+    deleted = await service.delete_milestone(db, milestone_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Milestone not found")
 
 
 @router.patch("/month-metrics/{metric_id}", response_model=MonthMetricSchema)

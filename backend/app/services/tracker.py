@@ -57,6 +57,55 @@ async def toggle_milestone(
     return milestone
 
 
+async def update_milestone(
+    db: AsyncSession,
+    milestone_id: int,
+    completed: Optional[bool],
+    text: Optional[str],
+) -> Optional[Milestone]:
+    result = await db.execute(
+        select(Milestone).where(Milestone.id == milestone_id)
+    )
+    milestone = result.scalar_one_or_none()
+    if milestone:
+        if completed is not None:
+            milestone.completed = completed
+        if text is not None:
+            milestone.text = text
+        await db.commit()
+        await db.refresh(milestone)
+    return milestone
+
+
+async def create_milestone(db: AsyncSession, month_id: int, text: str) -> Milestone:
+    result = await db.execute(
+        select(Milestone)
+        .where(Milestone.month_id == month_id)
+        .order_by(Milestone.sort_order.desc())
+    )
+    last = result.scalars().first()
+    next_order = (last.sort_order + 1) if last else 1
+    milestone = Milestone(
+        month_id=month_id, text=text, completed=False, sort_order=next_order
+    )
+    db.add(milestone)
+    await db.commit()
+    await db.refresh(milestone)
+    return milestone
+
+
+async def delete_milestone(db: AsyncSession, milestone_id: int) -> bool:
+    result = await db.execute(
+        select(Milestone).where(Milestone.id == milestone_id)
+    )
+    milestone = result.scalar_one_or_none()
+    if not milestone:
+        return False
+    await db.delete(milestone)
+    await db.commit()
+    return True
+
+
 async def update_month_metric(
     db: AsyncSession, metric_id: int, actual: Optional[str]
 ) -> Optional[MonthMetric]:
